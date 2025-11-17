@@ -1,7 +1,7 @@
 export function Card({ className = "", ...props }) {
   return (
     <div
-      className={`rounded-xl border bg-white text-slate-900 shadow-sm ${className}`}
+      className={`rounded-xl border bg-white text-slate-900 shadow-sm transition-colors dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-100 ${className}`}
       {...props}
     />
   );

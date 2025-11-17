@@ -30,12 +30,40 @@ import {
   ChevronRight,
   ThumbsUp,
   ThumbsDown,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+    const stored = localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark") {
+      return stored;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () =>
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+
   const [selectedInsight, setSelectedInsight] = useState(null);
   const [feedbackForms, setFeedbackForms] = useState({});
 
@@ -367,7 +395,7 @@ export default function App() {
 
   const insightVariants = {
     alert: {
-      gradient: "from-amber-50/80 via-white to-white",
+      gradient: "from-amber-50/80 via-white to-white dark:from-amber-900/30 dark:via-slate-900 dark:to-slate-900",
       border: "border-amber-100",
       ring: "ring-amber-200",
       badge: "bg-amber-100/80 text-amber-700",
@@ -380,7 +408,8 @@ export default function App() {
       highlight: "text-amber-700",
     },
     opportunity: {
-      gradient: "from-emerald-50/80 via-white to-white",
+      gradient:
+        "from-emerald-50/80 via-white to-white dark:from-emerald-900/25 dark:via-slate-900 dark:to-slate-900",
       border: "border-emerald-100",
       ring: "ring-emerald-200",
       badge: "bg-emerald-100/80 text-emerald-700",
@@ -469,44 +498,66 @@ export default function App() {
     value.charAt(0).toUpperCase() + value.slice(1);
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Top header */}
-        <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">
-              Fraud Operations Pulse
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              Minoris Risk Intelligence Hub
             </h1>
-            <p className="text-sm text-slate-500">
-              Live view of approval health, incident risk, and growth signals.
+            <p className="text-sm text-slate-500 dark:text-slate-300">
+               
             </p>
           </div>
-          <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">
-            <span className="mr-1.5 h-2 w-2 rounded-full bg-emerald-500" />
-            Demo dataset
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleTheme}
+              className="text-xs font-semibold"
+              aria-pressed={theme === "dark"}
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun className="h-4 w-4" />
+                  Light mode
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4" />
+                  Dark mode
+                </>
+              )}
+            </Button>
+            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200">
+              <span className="mr-1.5 h-2 w-2 rounded-full bg-emerald-500" />
+              Demo dataset
+            </span>
+          </div>
         </header>
 
         {/* Tabs wrapper */}
         <Tabs defaultValue="overview" className="space-y-6">
           {/* Tab nav */}
           <div className="flex justify-center">
-            <TabsList className="inline-flex bg-white rounded-full shadow-sm px-1 py-1">
+            <TabsList className="inline-flex rounded-full bg-white px-1 py-1 shadow-sm dark:bg-slate-900">
               <TabsTrigger
                 value="overview"
-                className="px-5 py-1.5 text-sm font-medium rounded-full text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white"
+                className="rounded-full px-5 py-1.5 text-sm font-medium text-slate-600 transition-colors data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:text-slate-300 dark:data-[state=active]:bg-slate-100/70 dark:data-[state=active]:text-slate-900"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="operations"
-                className="px-5 py-1.5 text-sm font-medium rounded-full text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white"
+                className="rounded-full px-5 py-1.5 text-sm font-medium text-slate-600 transition-colors data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:text-slate-300 dark:data-[state=active]:bg-slate-100/70 dark:data-[state=active]:text-slate-900"
               >
                 Trend Analysis
               </TabsTrigger>
               <TabsTrigger
                 value="macro"
-                className="px-5 py-1.5 text-sm font-medium rounded-full text-slate-600 data-[state=active]:bg-slate-900 data-[state=active]:text-white"
+                className="rounded-full px-5 py-1.5 text-sm font-medium text-slate-600 transition-colors data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:text-slate-300 dark:data-[state=active]:bg-slate-100/70 dark:data-[state=active]:text-slate-900"
               >
                 Strategic Insights
               </TabsTrigger>
@@ -516,10 +567,10 @@ export default function App() {
           {/* ---------------- OVERVIEW TAB ---------------- */}
           <TabsContent value="overview" className="space-y-8">
             {/* Status banner */}
-            <Card className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm">
+            <Card className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm dark:border-emerald-500/30">
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-50/90 via-white to-white"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-50/90 via-white to-white dark:from-emerald-900/40 dark:via-slate-900 dark:to-slate-900"
               />
               <CardContent className="relative flex flex-col gap-6 px-6 py-6 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-1 items-start gap-4">
