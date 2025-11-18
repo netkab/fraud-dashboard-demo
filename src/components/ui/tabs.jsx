@@ -2,8 +2,25 @@ import { createContext, useContext, useState } from "react";
 
 const TabsContext = createContext(null);
 
-export function Tabs({ defaultValue, children, className = "" }) {
-  const [value, setValue] = useState(defaultValue);
+export function Tabs({
+  defaultValue,
+  value: controlledValue,
+  onValueChange,
+  children,
+  className = "",
+}) {
+  const initialValue = controlledValue ?? defaultValue;
+  const [uncontrolledValue, setUncontrolledValue] = useState(initialValue);
+  const isControlled = controlledValue !== undefined;
+  const value = controlledValue ?? uncontrolledValue ?? defaultValue;
+
+  const setValue = (next) => {
+    if (!isControlled) {
+      setUncontrolledValue(next);
+    }
+    onValueChange?.(next);
+  };
+
   return (
     <TabsContext.Provider value={{ value, setValue }}>
       <div className={className}>{children}</div>

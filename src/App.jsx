@@ -62,10 +62,13 @@ export default function App() {
   const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
+  const [activeTab, setActiveTab] = useState("overview");
   const [selectedInsight, setSelectedInsight] = useState(null);
   const [feedbackForms, setFeedbackForms] = useState({});
+  const [insightNotes, setInsightNotes] = useState({});
 
   const getFeedbackKey = (prefix, title) => `${prefix}-${title}`;
+  const getInsightNoteKey = (title) => `trend-note-${title}`;
 
   const toggleFeedbackForm = (key, sentiment) => {
     setFeedbackForms((prev) => {
@@ -92,6 +95,13 @@ export default function App() {
         [key]: { ...prev[key], text },
       };
     });
+  };
+
+  const handleInsightNoteChange = (key, text) => {
+    setInsightNotes((prev) => ({
+      ...prev,
+      [key]: text,
+    }));
   };
 
   const handleFeedbackSubmit = (key) => {
@@ -522,6 +532,8 @@ export default function App() {
     const InsightIcon = insightStyles.icon;
     const feedbackKey = getFeedbackKey("trend", insight.title);
     const feedbackState = feedbackForms[feedbackKey];
+    const noteKey = getInsightNoteKey(insight.title);
+    const noteValue = insightNotes[noteKey] ?? "";
 
     return (
       <Card
@@ -625,25 +637,25 @@ export default function App() {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 text-xs text-slate-600">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <p>
-                      {insight.type === "opportunity"
-                        ? "Nudges to grow approvals with acceptable risk."
-                        : "Actions to stabilize or contain risky segments."}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500">
-                    <span className="inline-flex items-center rounded-full border border-dashed border-slate-200 px-2 py-0.5">
-                      Position{" "}
-                      {insights.findIndex(
-                        (item) => item.title === insight.title
-                      ) + 1}
-                    </span>
-                    <span className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5">
-                      Awaiting decision
-                    </span>
-                  </div>
+                  <label className="block space-y-2 text-xs text-slate-600">
+                    <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 font-semibold text-slate-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <p>
+                        {insight.type === "opportunity"
+                          ? "Nudges to grow approvals with acceptable risk."
+                          : "Actions to stabilize or contain risky segments."}
+                      </p>
+                    </div>
+                    <textarea
+                      className="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner focus:border-slate-400 focus:outline-none"
+                      rows={3}
+                      value={noteValue}
+                      onChange={(event) =>
+                        handleInsightNoteChange(noteKey, event.target.value)
+                      }
+                      placeholder="Capture actionable follow-ups tied to this card."
+                    />
+                  </label>
                 </div>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
@@ -652,32 +664,32 @@ export default function App() {
                       size="sm"
                       variant="outline"
                       className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                        feedbackState?.sentiment === "positive"
+                        feedbackState?.sentiment === "confirm"
                           ? "border-emerald-200 bg-emerald-50/80 text-emerald-700"
                           : ""
                       }`}
                       onClick={() =>
-                        toggleFeedbackForm(feedbackKey, "positive")
+                        toggleFeedbackForm(feedbackKey, "confirm")
                       }
                     >
                       <ThumbsUp className="h-4 w-4" />
-                      Greenlight
+                      Confirm
                     </Button>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                        feedbackState?.sentiment === "negative"
+                        feedbackState?.sentiment === "snooze"
                           ? "border-rose-200 bg-rose-50/80 text-rose-700"
                           : ""
                       }`}
                       onClick={() =>
-                        toggleFeedbackForm(feedbackKey, "negative")
+                        toggleFeedbackForm(feedbackKey, "snooze")
                       }
                     >
                       <ThumbsDown className="h-4 w-4" />
-                      Block / revisit
+                      Snooze for 7 days
                     </Button>
                   </div>
                   {feedbackState && (
@@ -689,9 +701,9 @@ export default function App() {
                       }}
                     >
                       <p className="text-sm text-slate-600">
-                        {feedbackState.sentiment === "positive"
-                          ? "Share why this initiative gets a green light and list the next moves."
-                          : "Log objections, redlines, and the actions needed before this can ship."}
+                        {feedbackState.sentiment === "confirm"
+                          ? "Confirm the plan and list the concrete moves."
+                          : "Note why this needs to pause and what to revisit in a week."}
                       </p>
                       <textarea
                         className="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner focus:border-slate-400 focus:outline-none"
@@ -701,9 +713,9 @@ export default function App() {
                           handleFeedbackChange(feedbackKey, event.target.value)
                         }
                         placeholder={
-                          feedbackState.sentiment === "positive"
-                            ? "e.g., Socialize with leadership, prep rollout doc..."
-                            : "e.g., Need more vendor benchmarking and risk review..."
+                          feedbackState.sentiment === "confirm"
+                            ? "e.g., Confirm owners, launch experiment, schedule KPI check-in..."
+                            : "e.g., Waiting on new data quality checks; follow up in next fraud review..."
                         }
                       />
                       <div className="flex justify-end gap-2">
@@ -778,7 +790,12 @@ export default function App() {
         </header>
 
         {/* Tabs wrapper */}
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs
+          defaultValue="overview"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           {/* Tab nav */}
           <div className="flex justify-center">
             <TabsList className="inline-flex rounded-full bg-white px-1 py-1 shadow-sm dark:bg-slate-900">
@@ -806,75 +823,62 @@ export default function App() {
           {/* ---------------- OVERVIEW TAB ---------------- */}
           <TabsContent value="overview" className="space-y-8">
             {/* Status banner */}
-            <Card className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm dark:border-emerald-500/30">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-50/90 via-white to-white dark:from-emerald-900/40 dark:via-slate-900 dark:to-slate-900"
-              />
-              <CardContent className="relative flex flex-col gap-6 px-6 py-6 md:flex-row md:items-center md:justify-between">
-                <div className="flex flex-1 items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                    <Activity className="h-5 w-5" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                      Live health
-                    </p>
-                    <p className="text-base font-semibold text-slate-900">
-                      System Status: Healthy
-                    </p>
-                    <p className="text-sm text-slate-600">
-                      No major latency, anomaly spikes, or vendor incidents
-                      detected.
-                    </p>
-                    <div className="flex flex-wrap gap-2 text-xs font-medium text-emerald-800/80">
-                      <span className="inline-flex items-center rounded-full bg-white/70 px-2 py-0.5">
-                        Demo dataset
-                      </span>
-                      <span className="inline-flex items-center rounded-full bg-white/70 px-2 py-0.5">
-                        Rolling view
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <dl className="grid w-full gap-6 text-sm text-slate-500 sm:grid-cols-3 md:max-w-xl">
-                  <div className="space-y-1">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      Vendors monitored
-                    </dt>
-                    <dd className="flex items-baseline gap-1 text-2xl font-semibold text-emerald-900">
-                      4
-                      <span className="text-xs font-medium text-slate-500">
-                        active
-                      </span>
-                    </dd>
-                  </div>
-                  <div className="space-y-1">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      Regions covered
-                    </dt>
-                    <dd className="flex items-baseline gap-1 text-2xl font-semibold text-emerald-900">
-                      5
-                      <span className="text-xs font-medium text-slate-500">
-                        focus areas
-                      </span>
-                    </dd>
-                  </div>
-                  <div className="space-y-1">
-                    <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      Coverage window
-                    </dt>
-                    <dd className="text-2xl font-semibold text-emerald-900">
-                      24h
-                    </dd>
-                    <p className="text-xs text-slate-500">
-                      Pre &amp; post-auth flows
-                    </p>
-                  </div>
-                </dl>
-              </CardContent>
-            </Card>
+{/* Status banner */}
+<Card className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm dark:border-emerald-500/30 min-h-[280px]">
+  <div
+    aria-hidden
+    className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-50/90 via-white to-white dark:from-emerald-900/40 dark:via-slate-900 dark:to-slate-900"
+  />
+  <CardContent className="relative flex h-full min-h-[280px] w-full flex-col items-center justify-center gap-10 px-10 py-10 md:flex-row md:items-center md:justify-between md:gap-14">
+    <div className="flex flex-1 items-center gap-5 md:gap-6">
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+        <Activity className="h-6 w-6" />
+      </div>
 
+      <div className="space-y-3">
+        <p className="text-lg font-semibold text-slate-900">
+          System Status: Healthy
+        </p>
+
+        <p className="text-base text-slate-600 leading-relaxed">
+          You have{" "}
+          <span className="font-semibold text-emerald-700">
+            {insightGroups.opportunity.length}
+          </span>{" "}
+          opportunities,{" "}
+          <span className="font-semibold text-amber-600">
+            {insightGroups.alert.length}
+          </span>{" "}
+          alerts, and{" "}
+          <span className="font-semibold text-slate-900">
+            {macroInsights.length}
+          </span>{" "}
+          strategic insights to review.
+        </p>
+      </div>
+    </div>
+
+    <div className="flex flex-wrap items-center gap-3">
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-sm font-semibold border-emerald-200 text-emerald-700 bg-white/70 hover:bg-emerald-50/50 px-4 py-2"
+        onClick={() => setActiveTab("operations")}
+      >
+        Go to Trend Analysis
+      </Button>
+
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-sm font-semibold border-slate-300 text-slate-700 bg-white/70 hover:bg-slate-50/50 px-4 py-2"
+        onClick={() => setActiveTab("macro")}
+      >
+        Go to Strategic Insights
+      </Button>
+    </div>
+  </CardContent>
+</Card>
             {/* KPI row */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -995,7 +999,7 @@ export default function App() {
               <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
                 <CardHeader className="pb-1">
                   <CardTitle className="text-sm font-semibold text-slate-800">
-                    Fraud Rate
+                    Fraud Rate Forecast
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="h-72 pt-2">
