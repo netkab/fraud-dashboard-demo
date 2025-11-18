@@ -35,6 +35,11 @@ export function OperationsTab({
 
   return (
     <TabsContent value="operations" className="space-y-6">
+      <div className="flex justify-end">
+        <Button type="button" size="sm" variant="outline" onClick={onStartRCA}>
+          Start a new analysis
+        </Button>
+      </div>
       <section className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           {["opportunity", "alert"].map((type) => {
@@ -156,11 +161,6 @@ export function OperationsTab({
           </div>
         </div>
       </section>
-      <div className="flex justify-end">
-        <Button type="button" size="sm" variant="outline" onClick={onStartRCA}>
-          Start a new analysis
-        </Button>
-      </div>
     </TabsContent>
   );
 }

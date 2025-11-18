@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Loader2, Moon, Sun } from "lucide-react";
 
 const funnelMockData = [
   {
@@ -92,6 +92,7 @@ export default function App() {
   const [showRCA, setShowRCA] = useState(false);
   const [rcaQuery, setRcaQuery] = useState("");
   const [rcaResult, setRcaResult] = useState(null);
+  const [isGeneratingRCA, setIsGeneratingRCA] = useState(false);
   const [showFunnelAssistant, setShowFunnelAssistant] = useState(false);
   const [selectedStage, setSelectedStage] = useState(null);
 
@@ -175,9 +176,12 @@ export default function App() {
     setShowRCA(false);
     setRcaQuery("");
     setRcaResult(null);
+    setIsGeneratingRCA(false);
   };
 
   const handleGenerateRCA = () => {
+    if (isGeneratingRCA) return;
+
     const driverPool = [
       insights[0]?.title,
       insights[1]?.title,
@@ -199,12 +203,19 @@ export default function App() {
       ].filter(Boolean),
     };
 
-    setRcaResult(mockResult);
+    setIsGeneratingRCA(true);
+    setRcaResult(null);
+
+    setTimeout(() => {
+      setRcaResult(mockResult);
+      setIsGeneratingRCA(false);
+    }, 1000);
   };
 
   const handleResetRCA = () => {
     setRcaQuery("");
     setRcaResult(null);
+    setIsGeneratingRCA(false);
   };
 
   const handleSelectFunnelStage = (stage) => {
@@ -275,7 +286,7 @@ export default function App() {
                 value="operations"
                 className="rounded-full px-5 py-1.5 text-sm font-medium text-slate-600 transition-colors data-[state=active]:bg-slate-900 data-[state=active]:text-white dark:text-slate-300 dark:data-[state=active]:bg-slate-100/70 dark:data-[state=active]:text-slate-900"
               >
-                Trend Analysis
+                Analytics
               </TabsTrigger>
               <TabsTrigger
                 value="macro"
@@ -443,8 +454,16 @@ export default function App() {
                   size="sm"
                   className="w-full"
                   onClick={handleGenerateRCA}
+                  disabled={isGeneratingRCA}
                 >
-                  Generate analysis
+                  {isGeneratingRCA ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating…
+                    </>
+                  ) : (
+                    "Generate"
+                  )}
                 </Button>
               </div>
             ) : (

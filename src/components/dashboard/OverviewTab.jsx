@@ -85,7 +85,7 @@ function StatusBanner({
         className="text-sm font-semibold border-emerald-200 text-emerald-700 bg-white/70 hover:bg-emerald-50/50 px-4 py-2"
         onClick={() => onNavigateToTab("operations")}
       >
-        Go to Trend Analysis
+        Go to Analytics
       </Button>
 
       <Button
