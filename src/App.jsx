@@ -361,6 +361,17 @@ export default function App() {
         "Potential to safely expand marketing in the region.",
       ],
     },
+    {
+  title: "Rising Demand for Express Payouts",
+  description: "Benchmarking shows your recent spike is part of a broader vertical trend.",
+  type: "opportunity",
+  details: [
+    "Customers in your vertical saw a 30–45% rise in express-payout usage over the past two weeks.",
+    "Your increase is smaller (18%), but fraud levels remain low and stable.",
+    "Competitors tightened controls prematurely, causing avoidable friction.",
+    "You can safely lean into this trend — reduce friction and capture more volume while keeping risk steady."
+  ]
+}
   ];
 
   const macroInsights = [
@@ -868,9 +879,9 @@ export default function App() {
               {systemHealth.map((item) => (
                 <Card
                   key={item.metric}
-                  className="rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                  className="h-full rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
                 >
-                  <CardContent className="flex h-full flex-col gap-4 p-5">
+                  <CardContent className="flex h-full min-h-[150px] flex-col justify-center gap-4 p-5">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                         {item.metric}
@@ -884,7 +895,7 @@ export default function App() {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-1 items-end justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
                       <div className="text-3xl font-semibold tracking-tight text-slate-900">
                         {item.value}
                       </div>
@@ -1431,139 +1442,109 @@ export default function App() {
           <TabsContent value="macro" className="space-y-6">
             <section className="max-w-3xl mx-auto">
               <div className="space-y-3">
-                {macroInsights.map((macro, index) => {
+                {macroInsights.map((macro) => {
                   const feedbackKey = getFeedbackKey("macro", macro.title);
                   const feedbackState = feedbackForms[feedbackKey];
-                  const queueLabels = ["Up next", "In review", "Queued"];
-                  const queueLabel = queueLabels[index] ?? "Queued";
 
                   return (
-                    <Card
-                      key={macro.title}
-                      className="relative rounded-3xl border border-slate-200 bg-white shadow-sm"
-                    >
-                      <CardContent className="flex gap-4 p-5">
-                        <div className="flex flex-col items-center pt-1">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          {index < macroInsights.length - 1 && (
-                            <span
-                              aria-hidden
-                              className="mt-2 h-full w-px bg-slate-200"
-                            />
-                          )}
+                  <Card
+                    key={macro.title}
+                    className="relative flex h-full rounded-3xl border border-slate-200 bg-white shadow-sm"
+                  >
+                    <CardContent className="flex h-full min-h-[180px] flex-1 flex-col justify-center gap-5 p-6">
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {macro.title}
+                        </p>
+                        <p className="text-sm text-slate-700">
+                          {macro.description}
+                          </p>
                         </div>
-                        <div className="flex-1 space-y-4">
-                          <div className="space-y-3">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <p className="text-sm font-semibold text-slate-900">
-                                {macro.title}
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
+                                feedbackState?.sentiment === "positive"
+                                  ? "border-emerald-200 bg-emerald-50/80 text-emerald-700"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                toggleFeedbackForm(feedbackKey, "positive")
+                              }
+                            >
+                              <ThumbsUp className="h-4 w-4" />
+                              Greenlight
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
+                                feedbackState?.sentiment === "negative"
+                                  ? "border-rose-200 bg-rose-50/80 text-rose-700"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                toggleFeedbackForm(feedbackKey, "negative")
+                              }
+                            >
+                              <ThumbsDown className="h-4 w-4" />
+                              Block / revisit
+                            </Button>
+                          </div>
+                          {feedbackState && (
+                            <form
+                              className="space-y-3"
+                              onSubmit={(event) => {
+                                event.preventDefault();
+                                handleFeedbackSubmit(feedbackKey);
+                              }}
+                            >
+                              <p className="text-sm text-slate-600">
+                                {feedbackState.sentiment === "positive"
+                                  ? "Share why this initiative gets a green light and list the next moves."
+                                  : "Log objections, redlines, and the actions needed before this can ship."}
                               </p>
-                              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                {queueLabel}
-                              </span>
-                            </div>
-                            <p className="text-sm text-slate-700">
-                              {macro.description}
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500">
-                              <span className="inline-flex items-center rounded-full border border-dashed border-slate-200 px-2 py-0.5">
-                                Position {index + 1}
-                              </span>
-                              <span className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5">
-                                Awaiting decision
-                              </span>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex flex-wrap gap-2">
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                                  feedbackState?.sentiment === "positive"
-                                    ? "border-emerald-200 bg-emerald-50/80 text-emerald-700"
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  toggleFeedbackForm(feedbackKey, "positive")
+                              <textarea
+                                className="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner focus:border-slate-400 focus:outline-none"
+                                rows={3}
+                                value={feedbackState.text ?? ""}
+                                onChange={(event) =>
+                                  handleFeedbackChange(
+                                    feedbackKey,
+                                    event.target.value
+                                  )
                                 }
-                              >
-                                <ThumbsUp className="h-4 w-4" />
-                                Greenlight
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                                  feedbackState?.sentiment === "negative"
-                                    ? "border-rose-200 bg-rose-50/80 text-rose-700"
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  toggleFeedbackForm(feedbackKey, "negative")
+                                placeholder={
+                                  feedbackState.sentiment === "positive"
+                                    ? "e.g., Socialize with leadership, prep rollout doc..."
+                                    : "e.g., Need more vendor benchmarking and risk review..."
                                 }
-                              >
-                                <ThumbsDown className="h-4 w-4" />
-                                Block / revisit
-                              </Button>
-                            </div>
-                            {feedbackState && (
-                              <form
-                                className="space-y-3"
-                                onSubmit={(event) => {
-                                  event.preventDefault();
-                                  handleFeedbackSubmit(feedbackKey);
-                                }}
-                              >
-                                <p className="text-sm text-slate-600">
-                                  {feedbackState.sentiment === "positive"
-                                    ? "Share why this initiative gets a green light and list the next moves."
-                                    : "Log objections, redlines, and the actions needed before this can ship."}
-                                </p>
-                                <textarea
-                                  className="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner focus:border-slate-400 focus:outline-none"
-                                  rows={3}
-                                  value={feedbackState.text ?? ""}
-                                  onChange={(event) =>
-                                    handleFeedbackChange(
-                                      feedbackKey,
-                                      event.target.value
-                                    )
-                                  }
-                                  placeholder={
-                                    feedbackState.sentiment === "positive"
-                                      ? "e.g., Socialize with leadership, prep rollout doc..."
-                                      : "e.g., Need more vendor benchmarking and risk review..."
-                                  }
-                                />
-                                <div className="flex justify-end gap-2">
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xs"
-                                    onClick={() =>
-                                      closeFeedbackForm(feedbackKey)
-                                    }
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    type="submit"
-                                    size="sm"
-                                    className="text-xs font-semibold"
-                                    disabled={!feedbackState.text?.trim()}
-                                  >
-                                    Submit log
-                                  </Button>
-                                </div>
-                              </form>
-                            )}
-                          </div>
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => closeFeedbackForm(feedbackKey)}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  className="text-xs font-semibold"
+                                  disabled={!feedbackState.text?.trim()}
+                                >
+                                  Submit log
+                                </Button>
+                              </div>
+                            </form>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
