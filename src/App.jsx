@@ -1,6 +1,48 @@
 import { useEffect, useMemo, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
+const funnelMockData = [
+  {
+    stage: "User Attempts",
+    volume: 100000,
+    drop: 0,
+    pressure: "low",
+  },
+  {
+    stage: "Pre-auth Checks",
+    volume: 87000,
+    drop: 13,
+    pressure: "medium",
+  },
+  {
+    stage: "Vendor Responses",
+    volume: 80000,
+    drop: 8,
+    pressure: "medium",
+  },
+  {
+    stage: "Model Decisions",
+    volume: 72000,
+    drop: 10,
+    pressure: "high",
+  },
+  {
+    stage: "3DS / Step-up",
+    volume: 65000,
+    drop: 9,
+    pressure: "high",
+  },
+  {
+    stage: "Final Approvals",
+    volume: 61000,
+    drop: 6,
+    pressure: "low",
+  },
+];
+
+const estimateLoss = (dropPercent, volume) =>
+  Math.round((dropPercent / 100) * volume * 42); // mock AOV
+
 import { Button } from "./components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { MacroInsightsTab } from "./components/dashboard/MacroInsightsTab";
@@ -50,6 +92,8 @@ export default function App() {
   const [showRCA, setShowRCA] = useState(false);
   const [rcaQuery, setRcaQuery] = useState("");
   const [rcaResult, setRcaResult] = useState(null);
+  const [showFunnelAssistant, setShowFunnelAssistant] = useState(false);
+  const [selectedStage, setSelectedStage] = useState(null);
 
   const insightGroups = useMemo(
     () => ({
@@ -163,6 +207,16 @@ export default function App() {
     setRcaResult(null);
   };
 
+  const handleSelectFunnelStage = (stage) => {
+    setSelectedStage(stage);
+    setShowFunnelAssistant(true);
+  };
+
+  const handleCloseFunnelAssistant = () => {
+    setShowFunnelAssistant(false);
+    setSelectedStage(null);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-8">
@@ -258,6 +312,11 @@ export default function App() {
             onFeedbackClose={closeFeedbackForm}
             onInsightNoteChange={handleInsightNoteChange}
             onStartRCA={handleStartRCA}
+            funnelData={funnelMockData}
+            estimateLoss={estimateLoss}
+            onSelectFunnelStage={handleSelectFunnelStage}
+            selectedStage={selectedStage}
+            showFunnelAssistant={showFunnelAssistant}
           />
 
           <MacroInsightsTab
@@ -270,6 +329,85 @@ export default function App() {
           />
         </Tabs>
       </main>
+      {showFunnelAssistant && selectedStage && (
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[420px] shadow-2xl">
+          <div className="relative flex h-full w-full flex-col gap-4 border-l border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
+            <button
+              type="button"
+              className="absolute right-3 top-3 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100"
+              onClick={handleCloseFunnelAssistant}
+            >
+              ×
+            </button>
+            <div className="space-y-1 pr-6">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Funnel Assistant
+              </p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Funnel Assistant
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Analysis for: {selectedStage.stage}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white/70 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Drop-off</p>
+                <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  {selectedStage.drop}%
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Est. loss</p>
+                <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  ${estimateLoss(selectedStage.drop, selectedStage.volume).toLocaleString()}
+                </p>
+              </div>
+              <div className="col-span-2 space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Fraud pressure</p>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                    selectedStage.pressure === "high"
+                      ? "bg-rose-50 text-rose-700 ring-1 ring-rose-100 dark:bg-rose-900/30 dark:text-rose-200 dark:ring-rose-900"
+                      : selectedStage.pressure === "medium"
+                        ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-900"
+                        : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-900"
+                  }`}
+                >
+                  {selectedStage.pressure === "high"
+                    ? "High pressure"
+                    : selectedStage.pressure === "medium"
+                      ? "Medium pressure"
+                      : "Low pressure"}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:from-slate-900 dark:via-slate-900">
+              <p className="text-sm text-slate-700 dark:text-slate-200">
+                Your drop at this stage is higher than similar customers (benchmark +4–7%).
+                Most of the loss is due to over-triggered checks and inefficient routing.
+              </p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Recommended next steps:
+              </p>
+              <ul className="list-disc space-y-2 pl-5 text-sm text-slate-700 dark:text-slate-200">
+                <li>Loosen model threshold by 3–5% for returning users.</li>
+                <li>Rebalance traffic toward the more stable vendor.</li>
+                <li>Reduce 3DS triggering for low-risk cohorts.</li>
+                <li>Move this segment to a lighter pre-auth flow.</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-2">
+              <Button type="button" size="sm" className="w-full" onClick={() => setActiveTab("macro")}>
+                View related Strategic Insights
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       {showRCA && (
         <div className="fixed inset-y-0 right-0 z-40 flex w-full max-w-[420px] shadow-2xl">
           <div className="relative flex h-full w-full flex-col gap-4 border-l border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
