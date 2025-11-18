@@ -47,6 +47,9 @@ export default function App() {
   const [selectedInsight, setSelectedInsight] = useState(null);
   const [feedbackForms, setFeedbackForms] = useState({});
   const [insightNotes, setInsightNotes] = useState({});
+  const [showRCA, setShowRCA] = useState(false);
+  const [rcaQuery, setRcaQuery] = useState("");
+  const [rcaResult, setRcaResult] = useState(null);
 
   const insightGroups = useMemo(
     () => ({
@@ -116,6 +119,48 @@ export default function App() {
       ...prev,
       [key]: text,
     }));
+  };
+
+  const handleStartRCA = () => {
+    setShowRCA(true);
+    setRcaQuery("");
+    setRcaResult(null);
+  };
+
+  const handleCloseRCA = () => {
+    setShowRCA(false);
+    setRcaQuery("");
+    setRcaResult(null);
+  };
+
+  const handleGenerateRCA = () => {
+    const driverPool = [
+      insights[0]?.title,
+      insights[1]?.title,
+      macroInsights[0]?.title,
+      regionalData[0]?.region && `Region: ${regionalData[0].region}`,
+    ].filter(Boolean);
+
+    const mockResult = {
+      drivers: driverPool.slice(0, 3),
+      impact:
+        macroInsights[1]?.summary ??
+        "Projected pressure on dispute volumes and manual review time over the next 2 weeks.",
+      actions: [
+        insights[2]?.actionItems?.[0] ??
+          "Tighten velocity checks on high-risk payment methods.",
+        macroInsights[2]?.summary ??
+          "Coordinate with product to freeze risky signup funnels temporarily.",
+        "Increase analyst sampling for escalated cases in EMEA this week.",
+      ].filter(Boolean),
+    };
+
+    setRcaResult(mockResult);
+  };
+
+  const handleResetRCA = () => {
+    setRcaQuery("");
+    setRcaResult(null);
   };
 
   return (
@@ -212,6 +257,7 @@ export default function App() {
             onFeedbackSubmit={handleFeedbackSubmit}
             onFeedbackClose={closeFeedbackForm}
             onInsightNoteChange={handleInsightNoteChange}
+            onStartRCA={handleStartRCA}
           />
 
           <MacroInsightsTab
@@ -224,6 +270,83 @@ export default function App() {
           />
         </Tabs>
       </main>
+      {showRCA && (
+        <div className="fixed inset-y-0 right-0 z-40 flex w-full max-w-[420px] shadow-2xl">
+          <div className="relative flex h-full w-full flex-col gap-4 border-l border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
+            <button
+              type="button"
+              className="absolute right-3 top-3 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100"
+              onClick={handleCloseRCA}
+            >
+              ×
+            </button>
+            <div className="space-y-1 pr-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Guided RCA
+              </p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Rapid context builder
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Describe what you want to dig into and we will assemble a quick directional RCA using today&apos;s signals.
+              </p>
+            </div>
+
+            {rcaResult === null ? (
+              <div className="flex flex-1 flex-col gap-3">
+                <textarea
+                  value={rcaQuery}
+                  onChange={(e) => setRcaQuery(e.target.value)}
+                  placeholder="Describe what you want to investigate…"
+                  className="min-h-[160px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none ring-0 transition focus:border-slate-300 focus:ring-2 focus:ring-slate-200 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-100 dark:focus:border-slate-700 dark:focus:ring-slate-800"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleGenerateRCA}
+                >
+                  Generate analysis
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-1 flex-col gap-4 overflow-y-auto pr-2">
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Drivers
+                  </p>
+                  <ul className="list-disc space-y-1 pl-4 text-sm text-slate-800 dark:text-slate-200">
+                    {rcaResult.drivers.map((driver) => (
+                      <li key={driver}>{driver}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Impact
+                  </p>
+                  <p className="text-sm text-slate-800 dark:text-slate-200">{rcaResult.impact}</p>
+                </div>
+                <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Recommended actions
+                  </p>
+                  <ul className="list-disc space-y-1 pl-4 text-sm text-slate-800 dark:text-slate-200">
+                    {rcaResult.actions.map((action) => (
+                      <li key={action}>{action}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="outline" size="sm" className="w-full" onClick={handleResetRCA}>
+                    Start over
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

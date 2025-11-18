@@ -1,6 +1,7 @@
 import { TabsContent } from "../ui/tabs";
 import { getFeedbackKey, getInsightNoteKey, getInsightStyles, formatLabel } from "../../utils/dashboardHelpers";
 import { InsightCard } from "./InsightCard";
+import { Button } from "../ui/button";
 
 export function OperationsTab({
   insightGroups,
@@ -13,6 +14,7 @@ export function OperationsTab({
   onFeedbackSubmit,
   onFeedbackClose,
   onInsightNoteChange,
+  onStartRCA,
 }) {
   return (
     <TabsContent value="operations" className="space-y-6">
@@ -66,6 +68,11 @@ export function OperationsTab({
           })}
         </div>
       </section>
+      <div className="flex justify-end">
+        <Button type="button" size="sm" variant="outline" onClick={onStartRCA}>
+          Start a new analysis
+        </Button>
+      </div>
     </TabsContent>
   );
 }
