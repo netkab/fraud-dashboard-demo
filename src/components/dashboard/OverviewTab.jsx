@@ -30,57 +30,76 @@ function StatusBanner({
   onNavigateToTab,
 }) {
   return (
-    <Card className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm dark:border-emerald-500/30 min-h-[280px]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-50/90 via-white to-white dark:from-emerald-900/40 dark:via-slate-900 dark:to-slate-900"
-      />
-      <CardContent className="relative flex h-full min-h-[280px] w-full flex-col items-center justify-center gap-10 px-10 py-10 md:flex-row md:items-center md:justify-between md:gap-14">
-        <div className="flex flex-1 items-center gap-5 md:gap-6">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-            <Activity className="h-6 w-6" />
-          </div>
+<Card className="relative overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-sm dark:border-emerald-500/30 min-h-[280px]">
+  <div
+    aria-hidden
+    className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-50/90 via-white to-white dark:from-emerald-900/40 dark:via-slate-900 dark:to-slate-900"
+  />
 
-          <div className="space-y-3">
-            <p className="text-lg font-semibold text-slate-900">
-              System Status: Healthy
-            </p>
+  <CardContent className="relative flex h-full min-h-[280px] w-full flex-col items-center justify-center gap-10 px-10 py-10 md:flex-row md:items-center md:justify-between md:gap-14">
 
-            <p className="text-base leading-relaxed text-slate-600">
-              You have{" "}
-              <span className="font-semibold text-emerald-700">
-                {opportunityCount}
-              </span>{" "}
-              opportunities,{" "}
-              <span className="font-semibold text-amber-600">{alertCount}</span>{" "}
-              alerts, and{" "}
-              <span className="font-semibold text-slate-900">{macroCount}</span>{" "}
-              strategic insights to review.
-            </p>
-          </div>
+    {/* LEFT SIDE */}
+    <div className="flex flex-1 items-center gap-5 md:gap-6">
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+        <Activity className="h-6 w-6" />
+      </div>
+
+      <div className="space-y-4">
+
+        {/* SYSTEM STATUS */}
+        <p className="text-lg font-semibold text-slate-900">
+          System Status: Healthy
+        </p>
+
+        {/* RISK POSTURE */}
+        <div className="flex flex-col gap-1">
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+            Risk Posture: Low
+          </span>
+          <p className="text-sm leading-relaxed text-slate-600">
+            No major anomalies observed. Approval rate improving, vendor SLA stable,
+            and fraud levels remain within expected range.
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-sm font-semibold border-emerald-200 text-emerald-700 bg-white/70 hover:bg-emerald-50/50 px-4 py-2"
-            onClick={() => onNavigateToTab("operations")}
-          >
-            Go to Trend Analysis
-          </Button>
+        {/* COUNTS */}
+        <p className="text-base leading-relaxed text-slate-600">
+          You have{" "}
+          <span className="font-semibold text-emerald-700">{opportunityCount}</span>{" "}
+          opportunities,{" "}
+          <span className="font-semibold text-amber-600">{alertCount}</span>{" "}
+          alerts, and{" "}
+          <span className="font-semibold text-slate-900">{macroCount}</span>{" "}
+          strategic insights to review.
+        </p>
 
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-sm font-semibold border-slate-300 text-slate-700 bg-white/70 hover:bg-slate-50/50 px-4 py-2"
-            onClick={() => onNavigateToTab("macro")}
-          >
-            Go to Strategic Insights
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+
+    {/* RIGHT SIDE BUTTONS */}
+    <div className="flex flex-wrap items-center gap-3">
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-sm font-semibold border-emerald-200 text-emerald-700 bg-white/70 hover:bg-emerald-50/50 px-4 py-2"
+        onClick={() => onNavigateToTab("operations")}
+      >
+        Go to Trend Analysis
+      </Button>
+
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-sm font-semibold border-slate-300 text-slate-700 bg-white/70 hover:bg-slate-50/50 px-4 py-2"
+        onClick={() => onNavigateToTab("macro")}
+      >
+        Go to Strategic Insights
+      </Button>
+    </div>
+
+  </CardContent>
+</Card>
   );
 }
 
