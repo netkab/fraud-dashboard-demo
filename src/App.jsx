@@ -386,6 +386,11 @@ export default function App() {
         "Raising the fraud score threshold from 0.6 → 0.7 would recover ~2.5% approvals with <0.05% fraud increase.",
     },
     {
+  title: "Shorten the Checkout Experience",
+  description:
+    "Your checkout takes 20–30% longer than what we observe across comparable customers. Removing or auto-filling one optional step usually brings completion rates up by 5–8%.",
+},
+    {
       title: "Vendor Load Balancing",
       description:
         "Vendor B handles ~80% of traffic. Routing new EU users to Vendor A first would drop this to ~40% and lift conversion by ~6%.",
@@ -395,11 +400,11 @@ export default function App() {
       description:
         "Enabling 3DS exemptions for low-risk returning users could remove friction for ~25% of customers and improve conversion by ~4%.",
     },
-    {
-      title: "Model Retraining Frequency",
-      description:
-        "Moving from monthly to weekly retraining would adapt to fraud pattern shifts ~3x faster and reduce false positives by ~10%.",
-    },
+{
+  title: "Fill the Missing Decline Reason Code",
+  description:
+    "A large share of your declines lacks a clear reason code. Other customers improved investigation speed by >50% after adding a simple field indicating which rule or system made the decision.",
+},
   ];
 
   const insightVariants = {
