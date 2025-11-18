@@ -46,9 +46,7 @@ export default function App() {
     if (stored === "light" || stored === "dark") {
       return stored;
     }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return "light";
   });
 
   useEffect(() => {
@@ -496,6 +494,231 @@ export default function App() {
 
   const formatLabel = (value = "") =>
     value.charAt(0).toUpperCase() + value.slice(1);
+
+  const insightGroups = {
+    opportunity: insights.filter((insight) => insight.type === "opportunity"),
+    alert: insights.filter((insight) => insight.type === "alert"),
+  };
+
+  const renderInsightCard = (insight) => {
+    const isSelected = selectedInsight?.title === insight.title;
+    const insightStyles = getInsightStyles(insight.type, isSelected);
+    const InsightIcon = insightStyles.icon;
+    const feedbackKey = getFeedbackKey("trend", insight.title);
+    const feedbackState = feedbackForms[feedbackKey];
+
+    return (
+      <Card
+        key={insight.title}
+        className={`relative overflow-hidden transition-all ${insightStyles.card}`}
+      >
+        <span
+          aria-hidden
+          className={`pointer-events-none absolute -right-8 top-0 h-28 w-36 rounded-full bg-gradient-to-r from-transparent to-transparent ${insightStyles.glow} blur-3xl opacity-70`}
+        />
+        <CardContent className="relative flex flex-col gap-4 p-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-1 items-start gap-3">
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-2xl ${insightStyles.iconBg}`}
+              >
+                <InsightIcon className="h-4 w-4" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  <span
+                    className={`h-2 w-2 rounded-full ${insightStyles.dot}`}
+                  />
+                  <span
+                    className={`rounded-full px-2 py-0.5 ${insightStyles.badge}`}
+                  >
+                    {formatLabel(insight.type)}
+                  </span>
+                  {isSelected && (
+                    <span
+                      className={`rounded-full bg-white/70 px-2 py-0.5 text-[11px] ${insightStyles.highlight}`}
+                    >
+                      Open
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {insight.title}
+                </p>
+                <p className="text-sm text-slate-600">{insight.description}</p>
+                {insight.details?.[0] && (
+                  <p className="text-xs text-slate-500">{insight.details[0]}</p>
+                )}
+              </div>
+            </div>
+            {isSelected ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className={`text-xs font-semibold transition-all ${insightStyles.button}`}
+                onClick={() => setSelectedInsight(null)}
+              >
+                Minimize
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className={`text-xs font-semibold transition-all ${insightStyles.button}`}
+                onClick={() => setSelectedInsight(insight)}
+              >
+                Show brief
+                <ChevronRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          {isSelected && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-4 rounded-2xl border border-slate-100/80 bg-white/80 p-4 text-sm text-slate-700 shadow-inner"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  <span
+                    className={`rounded-full px-2 py-0.5 ${insightStyles.badge}`}
+                  >
+                    {formatLabel(insight.type)}
+                  </span>
+                  <span className="text-slate-400">Deep dive</span>
+                </div>
+                <div className="flex flex-col space-y-2 text-sm text-slate-700">
+                  {insight.details?.map((detail) => (
+                    <div
+                      key={detail}
+                      className="flex items-start gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-sm"
+                    >
+                      <span
+                        className={`mt-1 inline-flex h-1.5 w-1.5 rounded-full ${insightStyles.dot}`}
+                      />
+                      <p className="leading-tight">{detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-white/80 p-3">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-slate-400" />
+                  <p className="text-xs text-slate-500">
+                    Log whether this initiative moves forward and any asks.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 text-xs text-slate-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <p>
+                      {insight.type === "opportunity"
+                        ? "Nudges to grow approvals with acceptable risk."
+                        : "Actions to stabilize or contain risky segments."}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500">
+                    <span className="inline-flex items-center rounded-full border border-dashed border-slate-200 px-2 py-0.5">
+                      Position{" "}
+                      {insights.findIndex(
+                        (item) => item.title === insight.title
+                      ) + 1}
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5">
+                      Awaiting decision
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
+                        feedbackState?.sentiment === "positive"
+                          ? "border-emerald-200 bg-emerald-50/80 text-emerald-700"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        toggleFeedbackForm(feedbackKey, "positive")
+                      }
+                    >
+                      <ThumbsUp className="h-4 w-4" />
+                      Greenlight
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
+                        feedbackState?.sentiment === "negative"
+                          ? "border-rose-200 bg-rose-50/80 text-rose-700"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        toggleFeedbackForm(feedbackKey, "negative")
+                      }
+                    >
+                      <ThumbsDown className="h-4 w-4" />
+                      Block / revisit
+                    </Button>
+                  </div>
+                  {feedbackState && (
+                    <form
+                      className="space-y-3"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        handleFeedbackSubmit(feedbackKey);
+                      }}
+                    >
+                      <p className="text-sm text-slate-600">
+                        {feedbackState.sentiment === "positive"
+                          ? "Share why this initiative gets a green light and list the next moves."
+                          : "Log objections, redlines, and the actions needed before this can ship."}
+                      </p>
+                      <textarea
+                        className="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner focus:border-slate-400 focus:outline-none"
+                        rows={3}
+                        value={feedbackState.text ?? ""}
+                        onChange={(event) =>
+                          handleFeedbackChange(feedbackKey, event.target.value)
+                        }
+                        placeholder={
+                          feedbackState.sentiment === "positive"
+                            ? "e.g., Socialize with leadership, prep rollout doc..."
+                            : "e.g., Need more vendor benchmarking and risk review..."
+                        }
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => closeFeedbackForm(feedbackKey)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          size="sm"
+                          className="text-xs font-semibold"
+                          disabled={!feedbackState.text?.trim()}
+                        >
+                          Submit log
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
@@ -1177,214 +1400,30 @@ export default function App() {
 
           {/* ---------------- TREND ANALYSIS TAB ---------------- */}
           <TabsContent value="operations" className="space-y-6">
-            <section className="max-w-3xl mx-auto space-y-3">
-              {insights.map((insight) => {
-                const isSelected = selectedInsight?.title === insight.title;
-                const insightStyles = getInsightStyles(
-                  insight.type,
-                  isSelected
-                );
-                const InsightIcon = insightStyles.icon;
-                const feedbackKey = getFeedbackKey("trend", insight.title);
-                const feedbackState = feedbackForms[feedbackKey];
+            <section className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {["opportunity", "alert"].map((type) => {
+                  const headerStyles = getInsightStyles(type, false);
+                  const group = insightGroups[type] ?? [];
 
-                return (
-                  <Card
-                    key={insight.title}
-                    className={`relative overflow-hidden transition-all ${insightStyles.card}`}
-                  >
-                    <span
-                      aria-hidden
-                      className={`pointer-events-none absolute -right-8 top-0 h-28 w-36 rounded-full bg-gradient-to-r from-transparent to-transparent ${insightStyles.glow} blur-3xl opacity-70`}
-                    />
-                    <CardContent className="relative flex flex-col gap-4 p-5">
-                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="flex flex-1 items-start gap-3">
-                          <div
-                            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${insightStyles.iconBg}`}
-                          >
-                            <InsightIcon className="h-4 w-4" />
-                          </div>
-                          <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                              <span
-                                className={`h-2 w-2 rounded-full ${insightStyles.dot}`}
-                              />
-                              <span
-                                className={`rounded-full px-2 py-0.5 ${insightStyles.badge}`}
-                              >
-                                {formatLabel(insight.type)}
-                              </span>
-                              {isSelected && (
-                                <span
-                                  className={`rounded-full bg-white/70 px-2 py-0.5 text-[11px] ${insightStyles.highlight}`}
-                                >
-                                  Open
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm font-semibold text-slate-900">
-                              {insight.title}
-                            </p>
-                            <p className="text-sm text-slate-600">
-                              {insight.description}
-                            </p>
-                            {insight.details?.[0] && (
-                              <p className="text-xs text-slate-500">
-                                {insight.details[0]}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        {!isSelected && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className={`text-xs font-semibold transition-all ${insightStyles.button}`}
-                            onClick={() => setSelectedInsight(insight)}
-                          >
-                            Show brief
-                            <ChevronRight className="ml-1.5 h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="space-y-4 rounded-2xl border border-slate-100/80 bg-white/80 p-4 text-sm text-slate-700 shadow-inner"
-                        >
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                              <span
-                                className={`rounded-full px-2 py-0.5 ${insightStyles.badge}`}
-                              >
-                                {formatLabel(insight.type)}
-                              </span>
-                              <span className="text-slate-400">
-                                Deep dive overview
-                              </span>
-                            </div>
-                            <p className="text-sm font-semibold text-slate-900">
-                              {insight.title}
-                            </p>
-                            <p className="text-sm text-slate-600">
-                              {insight.description}
-                            </p>
-                          </div>
-                          <ul className="space-y-2 text-sm text-slate-700">
-                            {insight.details?.map((detail, idx) => (
-                              <li
-                                key={idx}
-                                className="flex items-start gap-2 rounded-2xl bg-slate-50/80 p-3"
-                              >
-                                <span
-                                  className={`mt-1 h-2 w-2 flex-none rounded-full ${insightStyles.dot}`}
-                                />
-                                <span>{detail}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="flex justify-end">
-                            <Button
-                              onClick={() => setSelectedInsight(null)}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs font-semibold"
-                            >
-                              Minimize
-                            </Button>
-                          </div>
-                        </motion.div>
-                      )}
-                      <div className="rounded-2xl border border-white/60 bg-white/60 p-4 space-y-3">
+                  return (
+                    <div key={type} className="space-y-3">
+                      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white/70 px-4 py-3">
                         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                          <span className="text-slate-400">Action log</span>
-                          <span className="text-slate-300">·</span>
-                          <span className="text-slate-600">Capture a decision</span>
+                          <span
+                            className={`h-2 w-2 rounded-full ${headerStyles.dot}`}
+                          />
+                          <span>{formatLabel(type)}s</span>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                              feedbackState?.sentiment === "positive"
-                                ? "border-emerald-200 bg-emerald-50/80 text-emerald-700"
-                                : ""
-                            }`}
-                            onClick={() => toggleFeedbackForm(feedbackKey, "positive")}
-                          >
-                            <ThumbsUp className="h-4 w-4" />
-                            Acknowledge & Dismiss
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${
-                              feedbackState?.sentiment === "negative"
-                                ? "border-rose-200 bg-rose-50/80 text-rose-700"
-                                : ""
-                            }`}
-                            onClick={() => toggleFeedbackForm(feedbackKey, "negative")}
-                          >
-                            <ThumbsDown className="h-4 w-4" />
-                            False Alarm
-                          </Button>
-                        </div>
-                        {feedbackState && (
-                          <form
-                            className="space-y-3"
-                            onSubmit={(event) => {
-                              event.preventDefault();
-                              handleFeedbackSubmit(feedbackKey);
-                            }}
-                          >
-                            <p className="text-sm text-slate-600">
-                              {feedbackState.sentiment === "positive"
-                                ? "Document how you'll amplify this positive pattern or hand it off to partners."
-                                : "Outline remediation steps, owners, or experiments to contain the negative impact."}
-                            </p>
-                            <textarea
-                              className="w-full rounded-2xl border border-slate-200 bg-white/90 p-3 text-sm text-slate-700 shadow-inner focus:border-slate-400 focus:outline-none"
-                              rows={3}
-                              value={feedbackState.text ?? ""}
-                              onChange={(event) =>
-                                handleFeedbackChange(feedbackKey, event.target.value)
-                              }
-                              placeholder={
-                                feedbackState.sentiment === "positive"
-                                  ? "e.g., Notify growth to lean in on US campaign momentum..."
-                                  : "e.g., Escalate to EU checkout squad and roll back the last deploy..."
-                              }
-                            />
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs"
-                                onClick={() => closeFeedbackForm(feedbackKey)}
-                              >
-                                Cancel
-                              </Button>
-                              <Button
-                                type="submit"
-                                size="sm"
-                                className="text-xs font-semibold"
-                                disabled={!feedbackState.text?.trim()}
-                              >
-                                Submit log
-                              </Button>
-                            </div>
-                          </form>
-                        )}
+                        <span className="text-xs font-semibold text-slate-500">
+                          {group.length} items
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      {group.map((insight) => renderInsightCard(insight))}
+                    </div>
+                  );
+                })}
+              </div>
             </section>
           </TabsContent>
 
